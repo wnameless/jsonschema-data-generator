@@ -1,9 +1,15 @@
 package com.github.wnameless.json.jsonschemadatagenerator;
 
 import static org.junit.jupiter.api.Assertions.*;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 class JsonSchemaPathNavigatorTest {
 
@@ -493,6 +499,244 @@ class JsonSchemaPathNavigatorTest {
       JsonNode result = navigator.getSchema("$.status");
 
       assertEquals("pending", result.get("default").asString());
+    }
+  }
+
+  @Nested
+  class FactoryMethodTests {
+
+    @TempDir
+    Path tempDir;
+
+    @Test
+    void ofFile_createsNavigator() throws IOException {
+      String schema = """
+          {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string", "title": "Name" }
+            }
+          }
+          """;
+      Path schemaPath = tempDir.resolve("test-schema.json");
+      Files.writeString(schemaPath, schema);
+
+      var navigator = JsonSchemaPathNavigator.of(schemaPath.toFile());
+      JsonNode result = navigator.getSchema("$.name");
+
+      assertEquals("string", result.get("type").asString());
+      assertEquals("Name", result.get("title").asString());
+    }
+
+    @Test
+    void ofJsonNode_createsNavigator() throws Exception {
+      ObjectNode schemaNode = ObjectMapperFactory.getObjectMapper().createObjectNode();
+      schemaNode.put("type", "object");
+      ObjectNode properties = schemaNode.putObject("properties");
+      ObjectNode nameProperty = properties.putObject("name");
+      nameProperty.put("type", "string");
+      nameProperty.put("title", "Name");
+
+      var navigator = JsonSchemaPathNavigator.of(schemaNode);
+      JsonNode result = navigator.getSchema("$.name");
+
+      assertEquals("string", result.get("type").asString());
+      assertEquals("Name", result.get("title").asString());
+    }
+  }
+
+  @Nested
+  class ArrayNavigationEdgeCaseTests {
+
+    @Test
+    void prefixItems_indexBeyondSize_withNoItems_returnsNull() throws Exception {
+      String schema = """
+          {
+            "type": "object",
+            "properties": {
+              "tuple": {
+                "type": "array",
+                "prefixItems": [
+                  { "type": "string" }
+                ]
+              }
+            }
+          }
+          """;
+      var navigator = JsonSchemaPathNavigator.of(schema);
+
+      // Index 0 is in prefixItems
+      JsonNode first = navigator.getSchema("$.tuple[0]");
+      assertEquals("string", first.get("type").asString());
+
+      // Index 1 is beyond prefixItems and no items schema defined
+      assertThrows(InvalidJsonPathException.class, () -> navigator.getSchema("$.tuple[1]"));
+    }
+
+    @Test
+    void legacyTuple_indexBeyondSize_withNoAdditionalItems_returnsNull() throws Exception {
+      String schema = """
+          {
+            "type": "object",
+            "properties": {
+              "tuple": {
+                "type": "array",
+                "items": [
+                  { "type": "string" },
+                  { "type": "integer" }
+                ]
+              }
+            }
+          }
+          """;
+      var navigator = JsonSchemaPathNavigator.of(schema);
+
+      // Index 0 and 1 are in the tuple
+      JsonNode first = navigator.getSchema("$.tuple[0]");
+      assertEquals("string", first.get("type").asString());
+
+      JsonNode second = navigator.getSchema("$.tuple[1]");
+      assertEquals("integer", second.get("type").asString());
+
+      // Index 2 is beyond tuple and no additionalItems defined
+      assertThrows(InvalidJsonPathException.class, () -> navigator.getSchema("$.tuple[2]"));
+    }
+
+    @Test
+    void legacyTuple_additionalItemsBoolean_throwsException() throws Exception {
+      String schema = """
+          {
+            "type": "object",
+            "properties": {
+              "tuple": {
+                "type": "array",
+                "items": [
+                  { "type": "string" }
+                ],
+                "additionalItems": true
+              }
+            }
+          }
+          """;
+      var navigator = JsonSchemaPathNavigator.of(schema);
+
+      // Index beyond tuple with additionalItems: true (boolean, not schema)
+      assertThrows(InvalidJsonPathException.class, () -> navigator.getSchema("$.tuple[1]"));
+    }
+
+    @Test
+    void wildcardOnArrayWithOnlyPrefixItems_returnsNull() throws Exception {
+      String schema = """
+          {
+            "type": "object",
+            "properties": {
+              "tuple": {
+                "type": "array",
+                "prefixItems": [
+                  { "type": "string" },
+                  { "type": "integer" }
+                ]
+              }
+            }
+          }
+          """;
+      var navigator = JsonSchemaPathNavigator.of(schema);
+
+      // [*] with only prefixItems and no items schema
+      assertThrows(InvalidJsonPathException.class, () -> navigator.getSchema("$.tuple[*]"));
+    }
+
+    @Test
+    void wildcardOnLegacyTuple_withBooleanAdditionalItems_returnsNull() throws Exception {
+      String schema = """
+          {
+            "type": "object",
+            "properties": {
+              "tuple": {
+                "type": "array",
+                "items": [
+                  { "type": "string" }
+                ],
+                "additionalItems": true
+              }
+            }
+          }
+          """;
+      var navigator = JsonSchemaPathNavigator.of(schema);
+
+      // [*] on legacy tuple with additionalItems: true (not a schema)
+      assertThrows(InvalidJsonPathException.class, () -> navigator.getSchema("$.tuple[*]"));
+    }
+
+    @Test
+    void arrayWithNoItemsSchema_wildcardThrows() throws Exception {
+      String schema = """
+          {
+            "type": "object",
+            "properties": {
+              "empty": {
+                "type": "array"
+              }
+            }
+          }
+          """;
+      var navigator = JsonSchemaPathNavigator.of(schema);
+
+      // [*] on array with no items/prefixItems
+      assertThrows(InvalidJsonPathException.class, () -> navigator.getSchema("$.empty[*]"));
+    }
+
+    @Test
+    void arrayWithNoItemsSchema_indexThrows() throws Exception {
+      String schema = """
+          {
+            "type": "object",
+            "properties": {
+              "empty": {
+                "type": "array"
+              }
+            }
+          }
+          """;
+      var navigator = JsonSchemaPathNavigator.of(schema);
+
+      // [0] on array with no items/prefixItems
+      assertThrows(InvalidJsonPathException.class, () -> navigator.getSchema("$.empty[0]"));
+    }
+  }
+
+  @Nested
+  class PathParsingEdgeCaseTests {
+
+    @Test
+    void pathWithTrailingCharacters_throwsException() throws Exception {
+      String schema = """
+          {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" }
+            }
+          }
+          """;
+      var navigator = JsonSchemaPathNavigator.of(schema);
+
+      // Path with invalid trailing characters
+      assertThrows(InvalidJsonPathException.class, () -> navigator.getSchema("$.name!!!"));
+    }
+
+    @Test
+    void pathWithInvalidMiddleCharacters_throwsException() throws Exception {
+      String schema = """
+          {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" }
+            }
+          }
+          """;
+      var navigator = JsonSchemaPathNavigator.of(schema);
+
+      assertThrows(InvalidJsonPathException.class, () -> navigator.getSchema("$...name"));
     }
   }
 

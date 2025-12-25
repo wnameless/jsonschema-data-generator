@@ -2550,4 +2550,693 @@ class JsonSchemaDataGeneratorTest {
       assertTrue(str.contains("RANDOM"));
     }
   }
+
+  @Nested
+  class FluentWithMethodTests {
+
+    private static final String TEST_SCHEMA = """
+        {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "count": { "type": "integer", "minimum": 0, "maximum": 100 },
+            "active": { "type": "boolean" },
+            "status": { "type": "string", "enum": ["active", "inactive"] },
+            "email": { "type": "string", "format": "email" },
+            "tags": { "type": "array", "items": { "type": "string" } },
+            "scores": { "type": "array", "items": { "type": "integer" } },
+            "objects": { "type": "array", "items": { "type": "object", "properties": { "id": { "type": "integer" } } } },
+            "variant": { "anyOf": [{ "type": "string" }, { "type": "integer" }] },
+            "choice": { "oneOf": [{ "type": "boolean" }, { "type": "null" }] }
+          },
+          "additionalProperties": { "type": "string" },
+          "patternProperties": { "^x-": { "type": "string" } }
+        }
+        """;
+
+    private static final String EXAMPLES_SCHEMA = """
+        {
+          "type": "object",
+          "properties": {
+            "value": { "type": "string", "examples": ["example1", "example2", "example3"] }
+          }
+        }
+        """;
+
+    private static final String CONTAINS_SCHEMA = """
+        {
+          "type": "object",
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": { "type": "integer" },
+              "contains": { "const": 42 }
+            }
+          }
+        }
+        """;
+
+    @Test
+    void withAnyOfOption_modifiesGenerator() throws Exception {
+      var gen = JsonSchemaDataGenerator.normal().withAnyOfOption(AnyOfOption.LAST);
+      assertEquals(AnyOfOption.LAST, gen.getAnyOfOption());
+      JsonNode result = gen.generate(TEST_SCHEMA);
+      assertNotNull(result);
+    }
+
+    @Test
+    void withOneOfOption_modifiesGenerator() throws Exception {
+      var gen = JsonSchemaDataGenerator.normal().withOneOfOption(OneOfOption.LAST);
+      assertEquals(OneOfOption.LAST, gen.getOneOfOption());
+      JsonNode result = gen.generate(TEST_SCHEMA);
+      assertNotNull(result);
+    }
+
+    @Test
+    void withArrayOption_modifiesGenerator() throws Exception {
+      var gen = JsonSchemaDataGenerator.normal().withArrayOption(ArrayOption.EMPTY);
+      assertEquals(ArrayOption.EMPTY, gen.getArrayOption());
+      JsonNode result = gen.generate(TEST_SCHEMA);
+      assertTrue(result.get("objects").isEmpty());
+    }
+
+    @Test
+    void withPrimitiveArrayOption_modifiesGenerator() throws Exception {
+      var gen = JsonSchemaDataGenerator.normal().withPrimitiveArrayOption(PrimitiveArrayOption.EMPTY);
+      assertEquals(PrimitiveArrayOption.EMPTY, gen.getPrimitiveArrayOption());
+      JsonNode result = gen.generate(TEST_SCHEMA);
+      assertTrue(result.get("scores").isEmpty());
+    }
+
+    @Test
+    void withConstrainedNumberOption_modifiesGenerator() throws Exception {
+      var gen = JsonSchemaDataGenerator.normal().withConstrainedNumberOption(ConstrainedNumberOption.MAXIMUM);
+      assertEquals(ConstrainedNumberOption.MAXIMUM, gen.getConstrainedNumberOption());
+      JsonNode result = gen.generate(TEST_SCHEMA);
+      assertEquals(100, result.get("count").asInt());
+    }
+
+    @Test
+    void withDefaultValueOption_modifiesGenerator() throws Exception {
+      var gen = JsonSchemaDataGenerator.normal().withDefaultValueOption(DefaultValueOption.IGNORE);
+      assertEquals(DefaultValueOption.IGNORE, gen.getDefaultValueOption());
+    }
+
+    @Test
+    void withPropertyScopeOption_modifiesGenerator() throws Exception {
+      var gen = JsonSchemaDataGenerator.normal().withPropertyScopeOption(PropertyScopeOption.REQUIRED_ONLY);
+      assertEquals(PropertyScopeOption.REQUIRED_ONLY, gen.getPropertyScopeOption());
+    }
+
+    @Test
+    void withExamplesOption_modifiesGenerator() throws Exception {
+      var gen = JsonSchemaDataGenerator.normal().withExamplesOption(ExamplesOption.LAST);
+      assertEquals(ExamplesOption.LAST, gen.getExamplesOption());
+      JsonNode result = gen.generate(EXAMPLES_SCHEMA);
+      assertEquals("example3", result.get("value").asString());
+    }
+
+    @Test
+    void withContainsOption_modifiesGenerator() throws Exception {
+      var gen = JsonSchemaDataGenerator.normal().withContainsOption(ContainsOption.LAST);
+      assertEquals(ContainsOption.LAST, gen.getContainsOption());
+      JsonNode result = gen.generate(CONTAINS_SCHEMA);
+      assertNotNull(result);
+    }
+
+    @Test
+    void withAdditionalPropertiesOption_modifiesGenerator() throws Exception {
+      var gen = JsonSchemaDataGenerator.normal()
+          .withAdditionalPropertiesOption(AdditionalPropertiesOption.GENERATE_ONE);
+      assertEquals(AdditionalPropertiesOption.GENERATE_ONE, gen.getAdditionalPropertiesOption());
+      JsonNode result = gen.generate(TEST_SCHEMA);
+      assertTrue(result.has("additional_0"));
+    }
+
+    @Test
+    void withPatternPropertiesOption_modifiesGenerator() throws Exception {
+      var gen = JsonSchemaDataGenerator.normal()
+          .withPatternPropertiesOption(PatternPropertiesOption.GENERATE_ONE);
+      assertEquals(PatternPropertiesOption.GENERATE_ONE, gen.getPatternPropertiesOption());
+      JsonNode result = gen.generate(TEST_SCHEMA);
+      // Pattern properties generate keys matching ^x-
+      boolean hasPatternProp = false;
+      var fields = result.properties().iterator();
+      while (fields.hasNext()) {
+        if (fields.next().getKey().startsWith("x-")) {
+          hasPatternProp = true;
+          break;
+        }
+      }
+      assertTrue(hasPatternProp);
+    }
+
+    @Test
+    void withStringOption_modifiesGenerator() throws Exception {
+      var gen = JsonSchemaDataGenerator.normal().withStringOption(StringOption.NULL);
+      assertEquals(StringOption.NULL, gen.getStringOption());
+      JsonNode result = gen.generate(TEST_SCHEMA);
+      assertTrue(result.get("name").isNull());
+    }
+
+    @Test
+    void withNumberOption_modifiesGenerator() throws Exception {
+      var gen = JsonSchemaDataGenerator.normal().withNumberOption(NumberOption.ZERO);
+      assertEquals(NumberOption.ZERO, gen.getNumberOption());
+      JsonNode result = gen.generate(TEST_SCHEMA);
+      assertEquals(0, result.get("count").asInt());
+    }
+
+    @Test
+    void withRecursionDepthOption_modifiesGenerator() throws Exception {
+      var gen = JsonSchemaDataGenerator.normal().withRecursionDepthOption(RecursionDepthOption.DEEP);
+      assertEquals(RecursionDepthOption.DEEP, gen.getRecursionDepthOption());
+    }
+
+    @Test
+    void withUnionTypeOption_modifiesGenerator() throws Exception {
+      var gen = JsonSchemaDataGenerator.normal().withUnionTypeOption(UnionTypeOption.NULL_FIRST);
+      assertEquals(UnionTypeOption.NULL_FIRST, gen.getUnionTypeOption());
+    }
+
+    @Test
+    void withUniqueItemsOption_modifiesGenerator() throws Exception {
+      var gen = JsonSchemaDataGenerator.normal().withUniqueItemsOption(UniqueItemsOption.IGNORE);
+      assertEquals(UniqueItemsOption.IGNORE, gen.getUniqueItemsOption());
+    }
+
+    @Test
+    void withFormattedStringOption_modifiesGenerator() throws Exception {
+      var gen = JsonSchemaDataGenerator.normal().withFormattedStringOption(FormattedStringOption.NULL);
+      assertEquals(FormattedStringOption.NULL, gen.getFormattedStringOption());
+      JsonNode result = gen.generate(TEST_SCHEMA);
+      assertTrue(result.get("email").isNull());
+    }
+
+    @Test
+    void fluentApi_chainingMultipleMethods() throws Exception {
+      var gen = JsonSchemaDataGenerator.normal()
+          .withEnumOption(EnumOption.LAST)
+          .withBooleanOption(BooleanOption.TRUE)
+          .withArrayOption(ArrayOption.EMPTY);
+
+      assertEquals(EnumOption.LAST, gen.getEnumOption());
+      assertEquals(BooleanOption.TRUE, gen.getBooleanOption());
+      assertEquals(ArrayOption.EMPTY, gen.getArrayOption());
+
+      JsonNode result = gen.generate(TEST_SCHEMA);
+      assertEquals("inactive", result.get("status").asString());
+      assertTrue(result.get("active").asBoolean());
+      assertTrue(result.get("objects").isEmpty());
+    }
+  }
+
+  @Nested
+  class AdditionalOptionVariantTests {
+
+    @Test
+    void anyOfOption_LAST_selectsLastSchema() throws Exception {
+      String schema = """
+          {
+            "anyOf": [
+              { "type": "string", "const": "first" },
+              { "type": "string", "const": "second" },
+              { "type": "string", "const": "last" }
+            ]
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.builder().anyOfOption(AnyOfOption.LAST).build();
+      JsonNode result = gen.generate(schema);
+      assertEquals("last", result.asString());
+    }
+
+    @Test
+    void anyOfOption_NULL_returnsNull() throws Exception {
+      String schema = """
+          {
+            "anyOf": [
+              { "type": "string", "const": "first" },
+              { "type": "string", "const": "last" }
+            ]
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.builder().anyOfOption(AnyOfOption.NULL).build();
+      JsonNode result = gen.generate(schema);
+      assertTrue(result.isNull());
+    }
+
+    @Test
+    void oneOfOption_LAST_selectsLastSchema() throws Exception {
+      String schema = """
+          {
+            "oneOf": [
+              { "type": "string", "const": "first" },
+              { "type": "string", "const": "second" },
+              { "type": "string", "const": "last" }
+            ]
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.builder().oneOfOption(OneOfOption.LAST).build();
+      JsonNode result = gen.generate(schema);
+      assertEquals("last", result.asString());
+    }
+
+    @Test
+    void oneOfOption_NULL_returnsNull() throws Exception {
+      String schema = """
+          {
+            "oneOf": [
+              { "type": "string", "const": "first" },
+              { "type": "string", "const": "last" }
+            ]
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.builder().oneOfOption(OneOfOption.NULL).build();
+      JsonNode result = gen.generate(schema);
+      assertTrue(result.isNull());
+    }
+
+    @Test
+    void examplesOption_LAST_returnsLastExample() throws Exception {
+      String schema = """
+          {
+            "type": "string",
+            "examples": ["first", "middle", "last"]
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.builder().examplesOption(ExamplesOption.LAST).build();
+      JsonNode result = gen.generate(schema);
+      assertEquals("last", result.asString());
+    }
+
+    @Test
+    void examplesOption_RANDOM_returnsValidExample() throws Exception {
+      String schema = """
+          {
+            "type": "string",
+            "examples": ["a", "b", "c"]
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.builder().examplesOption(ExamplesOption.RANDOM).build();
+      JsonNode result = gen.generate(schema);
+      String value = result.asString();
+      assertTrue(value.equals("a") || value.equals("b") || value.equals("c"));
+    }
+
+    @Test
+    void constrainedNumberOption_MIDPOINT_returnsMidpoint() throws Exception {
+      String schema = """
+          {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.builder()
+          .constrainedNumberOption(ConstrainedNumberOption.MIDPOINT).build();
+      JsonNode result = gen.generate(schema);
+      assertEquals(50, result.asInt());
+    }
+
+    @Test
+    void constrainedNumberOption_RANDOM_returnsValue() throws Exception {
+      String schema = """
+          {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.builder()
+          .constrainedNumberOption(ConstrainedNumberOption.RANDOM).build();
+      JsonNode result = gen.generate(schema);
+      assertNotNull(result);
+      assertFalse(result.isNull());
+    }
+
+    @Test
+    void unionType_LAST_selectsLastType() throws Exception {
+      String schema = """
+          {
+            "type": ["string", "integer", "null"]
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.builder().unionTypeOption(UnionTypeOption.LAST).build();
+      JsonNode result = gen.generate(schema);
+      assertTrue(result.isNull());
+    }
+
+    @Test
+    void unionType_FIRST_selectsFirstType() throws Exception {
+      String schema = """
+          {
+            "type": ["string", "integer", "null"]
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.builder().unionTypeOption(UnionTypeOption.FIRST).build();
+      JsonNode result = gen.generate(schema);
+      assertTrue(result.isString());
+    }
+
+    @Test
+    void unionType_NULL_FIRST_selectsNullIfPresent() throws Exception {
+      String schema = """
+          {
+            "type": ["string", "null", "integer"]
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.builder().unionTypeOption(UnionTypeOption.NULL_FIRST).build();
+      JsonNode result = gen.generate(schema);
+      assertTrue(result.isNull());
+    }
+
+    @Test
+    void unionType_RANDOM_selectsValidType() throws Exception {
+      String schema = """
+          {
+            "type": ["string", "integer"]
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.builder().unionTypeOption(UnionTypeOption.RANDOM).build();
+      JsonNode result = gen.generate(schema);
+      assertTrue(result.isString() || result.isNumber());
+    }
+
+    @Test
+    void containsOption_LAST_placesContainsItemLast() throws Exception {
+      String schema = """
+          {
+            "type": "array",
+            "items": { "type": "integer", "const": 1 },
+            "contains": { "const": 99 },
+            "minItems": 3
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.builder().containsOption(ContainsOption.LAST).build();
+      JsonNode result = gen.generate(schema);
+      assertEquals(99, result.get(result.size() - 1).asInt());
+    }
+
+    @Test
+    void containsOption_DISTRIBUTE_shufflesItems() throws Exception {
+      String schema = """
+          {
+            "type": "array",
+            "items": { "type": "integer", "const": 1 },
+            "contains": { "const": 99 },
+            "minItems": 5
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.builder().containsOption(ContainsOption.DISTRIBUTE).build();
+      JsonNode result = gen.generate(schema);
+      boolean found = false;
+      for (int i = 0; i < result.size(); i++) {
+        if (result.get(i).asInt() == 99) {
+          found = true;
+          break;
+        }
+      }
+      assertTrue(found);
+    }
+
+    @Test
+    void stringOption_EMPTY_returnsEmptyString() throws Exception {
+      String schema = """
+          { "type": "string" }
+          """;
+      var gen = JsonSchemaDataGenerator.builder().stringOption(StringOption.EMPTY).build();
+      JsonNode result = gen.generate(schema);
+      assertEquals("", result.asString());
+    }
+
+    @Test
+    void numberOption_NULL_returnsNull() throws Exception {
+      String schema = """
+          { "type": "integer" }
+          """;
+      var gen = JsonSchemaDataGenerator.builder().numberOption(NumberOption.NULL).build();
+      JsonNode result = gen.generate(schema);
+      assertTrue(result.isNull());
+    }
+
+    @Test
+    void formattedStringOption_RANDOM_generatesRandomString() throws Exception {
+      String schema = """
+          {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 10
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.builder()
+          .formattedStringOption(FormattedStringOption.RANDOM).build();
+      JsonNode result = gen.generate(schema);
+      String value = result.asString();
+      assertTrue(value.length() >= 5 && value.length() <= 10);
+    }
+  }
+
+  @Nested
+  class BoundaryConditionTests {
+
+    @Test
+    void emptyUnionType_defaultsToObject() throws Exception {
+      String schema = """
+          {
+            "type": []
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.normal();
+      JsonNode result = gen.generate(schema);
+      assertTrue(result.isObject());
+    }
+
+    @Test
+    void emptyEnumArray_returnsNull() throws Exception {
+      String schema = """
+          {
+            "enum": []
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.normal();
+      JsonNode result = gen.generate(schema);
+      assertTrue(result.isNull());
+    }
+
+    @Test
+    void emptyExamplesArray_fallsBackToTypeGeneration() throws Exception {
+      String schema = """
+          {
+            "type": "string",
+            "examples": []
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.builder().examplesOption(ExamplesOption.FIRST).build();
+      JsonNode result = gen.generate(schema);
+      // Empty examples should return null, then fall through to string generation
+      assertTrue(result.isNull() || result.isString());
+    }
+
+    @Test
+    void emptyAnyOfArray_returnsNull() throws Exception {
+      String schema = """
+          {
+            "anyOf": []
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.normal();
+      JsonNode result = gen.generate(schema);
+      assertTrue(result.isNull());
+    }
+
+    @Test
+    void emptyOneOfArray_returnsNull() throws Exception {
+      String schema = """
+          {
+            "oneOf": []
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.normal();
+      JsonNode result = gen.generate(schema);
+      assertTrue(result.isNull());
+    }
+
+    @Test
+    void unknownFormat_returnsNull() throws Exception {
+      String schema = """
+          {
+            "type": "string",
+            "format": "unknown-format-xyz"
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.normal();
+      JsonNode result = gen.generate(schema);
+      assertTrue(result.isNull());
+    }
+
+    @Test
+    void unknownType_returnsNull() throws Exception {
+      String schema = """
+          {
+            "type": "unknown"
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.normal();
+      JsonNode result = gen.generate(schema);
+      assertTrue(result.isNull());
+    }
+
+    @Test
+    void additionalItemsTrue_generatesEmptySchema() throws Exception {
+      String schema = """
+          {
+            "type": "array",
+            "prefixItems": [
+              { "type": "string", "const": "first" }
+            ],
+            "additionalItems": true,
+            "minItems": 3
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.normal();
+      JsonNode result = gen.generate(schema);
+      assertTrue(result.size() >= 3);
+      assertEquals("first", result.get(0).asString());
+    }
+
+    @Test
+    void additionalItemsFalse_stopsAtPrefixItems() throws Exception {
+      String schema = """
+          {
+            "type": "array",
+            "prefixItems": [
+              { "type": "string", "const": "first" },
+              { "type": "string", "const": "second" }
+            ],
+            "additionalItems": false,
+            "minItems": 5
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.normal();
+      JsonNode result = gen.generate(schema);
+      // additionalItems: false means no more items after prefixItems
+      assertEquals(2, result.size());
+    }
+
+    @Test
+    void legacyTupleFormat_withAdditionalItemsSchema() throws Exception {
+      String schema = """
+          {
+            "type": "array",
+            "items": [
+              { "type": "string", "const": "tuple1" },
+              { "type": "integer", "const": 42 }
+            ],
+            "additionalItems": { "type": "boolean", "const": true },
+            "minItems": 4
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.normal();
+      JsonNode result = gen.generate(schema);
+      assertEquals(4, result.size());
+      assertEquals("tuple1", result.get(0).asString());
+      assertEquals(42, result.get(1).asInt());
+      assertTrue(result.get(2).asBoolean());
+      assertTrue(result.get(3).asBoolean());
+    }
+
+    @Test
+    void legacyTupleFormat_withAdditionalItemsTrue() throws Exception {
+      String schema = """
+          {
+            "type": "array",
+            "items": [
+              { "type": "string", "const": "first" }
+            ],
+            "additionalItems": true,
+            "minItems": 3
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.normal();
+      JsonNode result = gen.generate(schema);
+      assertEquals(3, result.size());
+      assertEquals("first", result.get(0).asString());
+    }
+
+    @Test
+    void legacyTupleFormat_withAdditionalItemsFalse() throws Exception {
+      String schema = """
+          {
+            "type": "array",
+            "items": [
+              { "type": "string", "const": "only" }
+            ],
+            "additionalItems": false,
+            "minItems": 5
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.normal();
+      JsonNode result = gen.generate(schema);
+      assertEquals(1, result.size());
+    }
+
+    @Test
+    void multipleOfZero_handledGracefully() throws Exception {
+      String schema = """
+          {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "multipleOf": 0
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.builder()
+          .constrainedNumberOption(ConstrainedNumberOption.MINIMUM).build();
+      JsonNode result = gen.generate(schema);
+      // multipleOf: 0 should be ignored
+      assertEquals(0, result.asInt());
+    }
+
+    @Test
+    void exclusiveBounds_respectsConstraints() throws Exception {
+      String schema = """
+          {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "exclusiveMaximum": 10
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.builder()
+          .constrainedNumberOption(ConstrainedNumberOption.MINIMUM).build();
+      JsonNode result = gen.generate(schema);
+      assertTrue(result.asInt() > 0);
+      assertTrue(result.asInt() < 10);
+    }
+
+    @Test
+    void arrayOption_NULL_generatesEmptyArray() throws Exception {
+      String schema = """
+          {
+            "type": "array",
+            "items": { "type": "object", "properties": { "x": { "type": "integer" } } }
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.builder().arrayOption(ArrayOption.NULL).build();
+      JsonNode result = gen.generate(schema);
+      assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void primitiveArrayOption_NULL_generatesEmptyArray() throws Exception {
+      String schema = """
+          {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+          """;
+      var gen = JsonSchemaDataGenerator.builder().primitiveArrayOption(PrimitiveArrayOption.NULL).build();
+      JsonNode result = gen.generate(schema);
+      assertTrue(result.isEmpty());
+    }
+  }
 }
