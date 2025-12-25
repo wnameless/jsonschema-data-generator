@@ -246,6 +246,7 @@ RefParserFactory.setAllOfOption(AllOfOption.SKIP);
 # Requirements
 
 - Java 17 or higher
+- Java 9 Module System supported (module name: `com.github.wnameless.json.jsonschemadatagenerator`)
 
 # Dependencies
 
