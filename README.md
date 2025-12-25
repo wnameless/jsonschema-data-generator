@@ -211,7 +211,9 @@ Map<String, Object> flattenedMap = JsonSchemaFlattener.flattenJsonSchema(schemaF
 
 // With custom RefParser
 $RefParser refParser = new $RefParser(schemaFile)
-    .withOptions(new $RefParserOptions().withMaxDepth(20));
+    .withOptions(new $RefParserOptions()
+        .withOnCircular(OnCircular.RESOLVE)
+        .withOnMissing(OnMissing.SKIP));
 Map<String, Object> flattenedMap = JsonSchemaFlattener.flattenJsonSchema(refParser);
 ```
 
@@ -219,18 +221,24 @@ Map<String, Object> flattenedMap = JsonSchemaFlattener.flattenJsonSchema(refPars
 Navigates flattened schemas using JsonPath-style expressions:
 
 ```java
-Map<String, Object> flattenedMap = JsonSchemaFlattener.flattenJsonSchema(jsonSchema);
-JsonSchemaPathNavigator navigator = new JsonSchemaPathNavigator(flattenedMap);
+// Create from JSON Schema string or file
+JsonSchemaPathNavigator navigator = JsonSchemaPathNavigator.of(jsonSchema);
 
-// Navigate to root
-JsonNode rootSchema = navigator.navigate("$");
+// Get the root schema
+JsonNode rootSchema = navigator.getSchema("$");
 
-// Navigate to a property
-JsonNode nameSchema = navigator.navigate("$.name");
+// Get a property schema
+JsonNode nameSchema = navigator.getSchema("$.name");
 
-// Navigate into arrays
-JsonNode itemSchema = navigator.navigate("$.items[*]");
-JsonNode firstItemSchema = navigator.navigate("$.items[0]");
+// Get array items schema
+JsonNode itemSchema = navigator.getSchema("$.items[*]");
+JsonNode firstItemSchema = navigator.getSchema("$.items[0]");
+
+// Check if a path exists
+boolean hasName = navigator.hasPath("$.name");
+
+// Find schema (returns Optional)
+Optional<JsonNode> schema = navigator.findSchema("$.optional");
 ```
 
 ## ObjectMapperFactory
@@ -248,7 +256,9 @@ Configure schema parsing options:
 
 ```java
 // Set custom RefParser options
-$RefParserOptions options = new $RefParserOptions().withMaxDepth(50);
+$RefParserOptions options = new $RefParserOptions()
+    .withOnCircular(OnCircular.RESOLVE)
+    .withOnMissing(OnMissing.SKIP);
 RefParserFactory.setOptions(options);
 
 // Control allOf merging
