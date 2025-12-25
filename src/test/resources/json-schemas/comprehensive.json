@@ -1,0 +1,494 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/comprehensive-test.json",
+  "title": "Comprehensive Test Schema",
+  "description": "A comprehensive schema to test all supported JSON Schema keywords",
+  "type": "object",
+  "required": ["id", "name", "status", "profile", "tags", "metadata"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "title": "Unique Identifier",
+      "description": "A UUID for this record"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^[A-Za-z][A-Za-z0-9 ]*$",
+      "title": "Name",
+      "examples": ["John Doe", "Jane Smith", "Bob Wilson"]
+    },
+    "email": {
+      "type": "string",
+      "format": "email",
+      "title": "Email Address"
+    },
+    "age": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 150,
+      "title": "Age in years"
+    },
+    "score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "exclusiveMinimum": 0,
+      "multipleOf": 0.5,
+      "title": "Score",
+      "default": 50.0
+    },
+    "rating": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "exclusiveMaximum": 6,
+      "title": "Rating 1-5"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "inactive", "pending", "suspended"],
+      "default": "pending",
+      "title": "Account Status"
+    },
+    "verified": {
+      "type": "boolean",
+      "default": false,
+      "title": "Is Verified"
+    },
+    "constField": {
+      "const": "FIXED_VALUE",
+      "title": "Constant Field"
+    },
+    "profile": {
+      "$ref": "#/$defs/Profile"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 50
+      },
+      "minItems": 1,
+      "maxItems": 10,
+      "uniqueItems": true,
+      "title": "Tags"
+    },
+    "scores": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 100
+      },
+      "minItems": 3,
+      "maxItems": 5,
+      "title": "Score History"
+    },
+    "coordinates": {
+      "type": "array",
+      "prefixItems": [
+        { "type": "number", "title": "Latitude", "minimum": -90, "maximum": 90 },
+        { "type": "number", "title": "Longitude", "minimum": -180, "maximum": 180 },
+        { "type": "number", "title": "Altitude", "minimum": 0 }
+      ],
+      "items": false,
+      "title": "GPS Coordinates (lat, lon, alt)"
+    },
+    "mixedTuple": {
+      "type": "array",
+      "prefixItems": [
+        { "type": "string", "title": "Label" },
+        { "type": "integer", "title": "Count" },
+        { "type": "boolean", "title": "Active" }
+      ],
+      "items": { "type": "string", "title": "Additional Notes" },
+      "title": "Mixed Tuple with Additional Items"
+    },
+    "legacyTuple": {
+      "type": "array",
+      "items": [
+        { "type": "string", "title": "First" },
+        { "type": "number", "title": "Second" }
+      ],
+      "additionalItems": { "type": "boolean", "title": "Extra" },
+      "title": "Legacy Tuple Format"
+    },
+    "matrix": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "minItems": 2,
+        "maxItems": 2
+      },
+      "minItems": 2,
+      "maxItems": 2,
+      "title": "3D Matrix (2x2x2)"
+    },
+    "containsExample": {
+      "type": "array",
+      "contains": {
+        "type": "object",
+        "properties": {
+          "special": { "type": "boolean", "const": true }
+        },
+        "required": ["special"]
+      },
+      "items": {
+        "type": "object",
+        "properties": {
+          "value": { "type": "integer" },
+          "special": { "type": "boolean", "default": false }
+        }
+      },
+      "minItems": 3,
+      "title": "Array with Contains Constraint"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Creation Timestamp"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Last Update Timestamp"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1
+        }
+      },
+      "required": ["createdAt"],
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Metadata"
+    },
+    "settings": {
+      "type": "object",
+      "patternProperties": {
+        "^opt_": {
+          "type": "boolean",
+          "title": "Option Flag"
+        },
+        "^val_": {
+          "type": "integer",
+          "minimum": 0,
+          "title": "Value Setting"
+        }
+      },
+      "additionalProperties": false,
+      "title": "Settings with Pattern Properties"
+    },
+    "dynamicProps": {
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^[a-z][a-z0-9_]*$"
+      },
+      "additionalProperties": {
+        "type": "string"
+      },
+      "minProperties": 1,
+      "maxProperties": 5,
+      "title": "Dynamic Properties"
+    },
+    "paymentMethod": {
+      "oneOf": [
+        {
+          "type": "object",
+          "title": "Credit Card",
+          "properties": {
+            "type": { "const": "credit_card" },
+            "cardNumber": { "type": "string", "pattern": "^[0-9]{16}$" },
+            "expiry": { "type": "string", "pattern": "^[0-9]{2}/[0-9]{2}$" },
+            "cvv": { "type": "string", "pattern": "^[0-9]{3,4}$" }
+          },
+          "required": ["type", "cardNumber", "expiry", "cvv"]
+        },
+        {
+          "type": "object",
+          "title": "Bank Transfer",
+          "properties": {
+            "type": { "const": "bank_transfer" },
+            "accountNumber": { "type": "string" },
+            "routingNumber": { "type": "string" }
+          },
+          "required": ["type", "accountNumber", "routingNumber"]
+        },
+        {
+          "type": "object",
+          "title": "PayPal",
+          "properties": {
+            "type": { "const": "paypal" },
+            "email": { "type": "string", "format": "email" }
+          },
+          "required": ["type", "email"]
+        }
+      ],
+      "title": "Payment Method (oneOf)"
+    },
+    "contactInfo": {
+      "anyOf": [
+        {
+          "type": "object",
+          "title": "Phone Contact",
+          "properties": {
+            "phone": { "type": "string", "pattern": "^\\+?[0-9]{10,15}$" }
+          },
+          "required": ["phone"]
+        },
+        {
+          "type": "object",
+          "title": "Email Contact",
+          "properties": {
+            "email": { "type": "string", "format": "email" }
+          },
+          "required": ["email"]
+        }
+      ],
+      "title": "Contact Info (anyOf)"
+    },
+    "fullAddress": {
+      "allOf": [
+        { "$ref": "#/$defs/Address" },
+        {
+          "type": "object",
+          "properties": {
+            "label": { "type": "string", "enum": ["home", "work", "other"] },
+            "primary": { "type": "boolean", "default": false }
+          }
+        }
+      ],
+      "title": "Full Address (allOf with $ref)"
+    },
+    "organization": {
+      "$ref": "#/$defs/Organization"
+    },
+    "deepNested": {
+      "type": "object",
+      "properties": {
+        "level1": {
+          "type": "object",
+          "properties": {
+            "level2": {
+              "type": "object",
+              "properties": {
+                "level3": {
+                  "type": "object",
+                  "properties": {
+                    "level4": {
+                      "type": "object",
+                      "properties": {
+                        "level5": {
+                          "type": "object",
+                          "properties": {
+                            "value": {
+                              "type": "string",
+                              "title": "Deeply Nested Value",
+                              "default": "deep"
+                            },
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "id": { "type": "integer" },
+                                  "name": { "type": "string" }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "title": "Deeply Nested Object (5 levels)"
+    },
+    "formattedStrings": {
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "uri": { "type": "string", "format": "uri" },
+        "uuid": { "type": "string", "format": "uuid" },
+        "date": { "type": "string", "format": "date" },
+        "time": { "type": "string", "format": "time" },
+        "dateTime": { "type": "string", "format": "date-time" },
+        "hostname": { "type": "string", "format": "hostname" },
+        "ipv4": { "type": "string", "format": "ipv4" },
+        "ipv6": { "type": "string", "format": "ipv6" }
+      },
+      "title": "All Supported String Formats"
+    },
+    "nullableField": {
+      "type": ["string", "null"],
+      "title": "Nullable String"
+    }
+  },
+  "$defs": {
+    "Profile": {
+      "type": "object",
+      "title": "User Profile",
+      "properties": {
+        "firstName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50
+        },
+        "lastName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50
+        },
+        "bio": {
+          "type": "string",
+          "maxLength": 500,
+          "default": ""
+        },
+        "avatar": {
+          "type": "string",
+          "format": "uri"
+        },
+        "socialLinks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "platform": {
+                "type": "string",
+                "enum": ["twitter", "linkedin", "github", "facebook"]
+              },
+              "url": {
+                "type": "string",
+                "format": "uri"
+              }
+            },
+            "required": ["platform", "url"]
+          },
+          "maxItems": 5
+        },
+        "address": {
+          "$ref": "#/$defs/Address"
+        }
+      },
+      "required": ["firstName", "lastName"]
+    },
+    "Address": {
+      "type": "object",
+      "title": "Address",
+      "properties": {
+        "street": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "city": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "state": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 50
+        },
+        "postalCode": {
+          "type": "string",
+          "pattern": "^[0-9]{5}(-[0-9]{4})?$"
+        },
+        "country": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100,
+          "default": "USA"
+        }
+      },
+      "required": ["street", "city", "country"]
+    },
+    "Organization": {
+      "type": "object",
+      "title": "Organization (Recursive)",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "enum": ["company", "department", "team", "group"]
+        },
+        "members": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "role": { "type": "string" },
+              "email": { "type": "string", "format": "email" }
+            },
+            "required": ["name"]
+          }
+        },
+        "subOrganizations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Organization"
+          },
+          "title": "Child Organizations (Recursive Reference)"
+        },
+        "parent": {
+          "$ref": "#/$defs/Organization",
+          "title": "Parent Organization (Recursive Reference)"
+        }
+      },
+      "required": ["name", "type"]
+    },
+    "TreeNode": {
+      "type": "object",
+      "title": "Tree Node (Recursive)",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "label": {
+          "type": "string"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TreeNode"
+          },
+          "title": "Child Nodes"
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "required": ["id", "label"]
+    }
+  },
+  "additionalProperties": false
+}
