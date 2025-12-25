@@ -4,6 +4,17 @@ jsonschema-data-generator
 =============
 A Java library that generates data from JSON Schema definitions. It flattens JSON schemas (resolving `$ref` references, `allOf`, etc.) and generates corresponding JSON data structures with configurable generation strategies.
 
+## Key Features
+
+- **Modern JSON Schema Support** — Supports JSON Schema 2020-12 keywords like `prefixItems`, `contains`, `minContains`/`maxContains` alongside draft-04/06/07 keywords
+- **Fine-Grained Control** — 20+ configuration options for precise control over generated data (enums, arrays, strings, numbers, composition keywords, and more)
+- **Preset Modes** — Four ready-to-use configurations (`minimal`, `normal`, `verbose`, `skeleton`) for common use cases
+- **Deterministic Output** — Options like `FIRST`, `MINIMUM`, `MIDPOINT` enable reproducible, predictable output for testing
+- **Circular Schema Handling** — Built-in recursion depth control for self-referencing schemas
+- **Union Type Support** — Intelligent handling of union types like `["string", "null"]` with configurable strategies
+- **Realistic Fake Data** — Integrated with DataFaker for generating realistic emails, dates, UUIDs, and more
+- **Regex Pattern Generation** — Uses RgxGen to generate strings matching `pattern` constraints
+
 ## Purpose
 Converts a JSON Schema
 ```json
@@ -66,7 +77,7 @@ The library provides four preset configurations for common use cases:
 
 ```java
 // Minimal - generates absolute minimum valid data
-// Only required fields, empty arrays, null for formatted strings
+// Only required fields, empty arrays, minimum valid values for constrained fields
 JsonNode minimal = JsonSchemaDataGenerator.minimal().generate(jsonSchema);
 
 // Normal - balanced defaults for useful data generation (default)
