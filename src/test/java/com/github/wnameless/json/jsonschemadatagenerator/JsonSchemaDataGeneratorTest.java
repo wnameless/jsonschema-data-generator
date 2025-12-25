@@ -2006,8 +2006,9 @@ class JsonSchemaDataGeneratorTest {
       // No additional or pattern properties
       assertEquals(1, result.size());
 
-      // Format should be null (formattedStringOption = NULL)
-      assertTrue(result.get("required_field").isNull());
+      // Format should be valid email (formattedStringOption = DATAFAKER for valid minimal data)
+      assertFalse(result.get("required_field").isNull());
+      assertTrue(result.get("required_field").asString().contains("@"));
     }
 
     @Test

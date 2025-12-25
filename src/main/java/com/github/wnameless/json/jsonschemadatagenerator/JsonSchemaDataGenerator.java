@@ -72,7 +72,7 @@ public final class JsonSchemaDataGenerator {
 
   /**
    * Creates a generator with minimal settings - generates the absolute minimum valid data.
-   * Only required fields, empty arrays, null for formatted strings/numbers.
+   * Only required fields, empty arrays, minimum valid values for constrained fields.
    */
   public static JsonSchemaDataGenerator minimal() {
     return builder()
@@ -82,8 +82,8 @@ public final class JsonSchemaDataGenerator {
         .arrayOption(ArrayOption.EMPTY)
         .primitiveArrayOption(PrimitiveArrayOption.EMPTY)
         .booleanOption(BooleanOption.FALSE)
-        .formattedStringOption(FormattedStringOption.NULL)
-        .constrainedNumberOption(ConstrainedNumberOption.NULL)
+        .formattedStringOption(FormattedStringOption.DATAFAKER)
+        .constrainedNumberOption(ConstrainedNumberOption.MINIMUM)
         .defaultValueOption(DefaultValueOption.USE)
         .propertyScopeOption(PropertyScopeOption.REQUIRED_ONLY)
         .uniqueItemsOption(UniqueItemsOption.ENFORCE)
@@ -116,7 +116,7 @@ public final class JsonSchemaDataGenerator {
         .primitiveArrayOption(PrimitiveArrayOption.RANDOM)
         .booleanOption(BooleanOption.RANDOM)
         .formattedStringOption(FormattedStringOption.DATAFAKER)
-        .constrainedNumberOption(ConstrainedNumberOption.RANDOM)
+        .constrainedNumberOption(ConstrainedNumberOption.DATAFAKER)
         .defaultValueOption(DefaultValueOption.USE)
         .propertyScopeOption(PropertyScopeOption.ALL)
         .uniqueItemsOption(UniqueItemsOption.ENFORCE)
@@ -142,6 +142,7 @@ public final class JsonSchemaDataGenerator {
         .primitiveArrayOption(PrimitiveArrayOption.ONE)
         .defaultValueOption(DefaultValueOption.USE)
         .propertyScopeOption(PropertyScopeOption.ALL)
+        .examplesOption(ExamplesOption.NONE)
         .additionalPropertiesOption(AdditionalPropertiesOption.NONE)
         .patternPropertiesOption(PatternPropertiesOption.NONE)
         .recursionDepthOption(RecursionDepthOption.SHALLOW)
