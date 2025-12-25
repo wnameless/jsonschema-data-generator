@@ -2,6 +2,8 @@ package com.github.wnameless.json.jsonschemadatagenerator;
 
 /**
  * Controls how the generator handles union type arrays like {@code ["string", "null"]}.
+ *
+ * @author Wei-Ming Wu
  */
 public enum UnionTypeOption {
 

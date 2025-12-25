@@ -14,6 +14,8 @@ import tools.jackson.databind.ObjectMapper;
  * customMapper.configure(...);
  * ObjectMapperFactory.setObjectMapper(customMapper);
  * </pre>
+ *
+ * @author Wei-Ming Wu
  */
 public final class ObjectMapperFactory {
 

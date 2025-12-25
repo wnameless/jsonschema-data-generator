@@ -31,6 +31,8 @@ import io.zenwave360.jsonrefparser.$RefParserOptions.OnMissing;
  * // Skip merging allOf for conditional logic patterns
  * RefParserFactory.setAllOfOption(AllOfOption.SKIP);
  * </pre>
+ *
+ * @author Wei-Ming Wu
  */
 public final class RefParserFactory {
 

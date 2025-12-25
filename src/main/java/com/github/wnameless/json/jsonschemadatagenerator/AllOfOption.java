@@ -6,6 +6,8 @@ package com.github.wnameless.json.jsonschemadatagenerator;
  * <p>
  * Some libraries (e.g., react-jsonschema-form) use allOf for conditional logic rather than schema
  * combination. In these cases, calling mergeAllOf() can cause errors.
+ *
+ * @author Wei-Ming Wu
  */
 public enum AllOfOption {
 

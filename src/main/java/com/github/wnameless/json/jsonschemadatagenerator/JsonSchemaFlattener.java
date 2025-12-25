@@ -14,6 +14,8 @@ import io.zenwave360.jsonrefparser.$Refs;
  * Uses {@link RefParserFactory} to obtain configuration options. Users can customize parsing
  * behavior by calling {@link RefParserFactory#setOptions} and
  * {@link RefParserFactory#setAllOfOption} before invoking flatten methods.
+ *
+ * @author Wei-Ming Wu
  */
 public final class JsonSchemaFlattener {
 

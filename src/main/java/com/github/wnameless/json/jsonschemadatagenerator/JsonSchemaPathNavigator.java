@@ -23,6 +23,8 @@ import tools.jackson.databind.ObjectMapper;
  * <li>{@code $.array[*]} - Array items schema</li>
  * <li>{@code $.array[0]} - Specific tuple position</li>
  * </ul>
+ *
+ * @author Wei-Ming Wu
  */
 public final class JsonSchemaPathNavigator {
 

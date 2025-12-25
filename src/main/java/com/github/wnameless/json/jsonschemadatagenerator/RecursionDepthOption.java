@@ -7,6 +7,8 @@ package com.github.wnameless.json.jsonschemadatagenerator;
  * When using {@code OnCircular.RESOLVE} in {@link RefParserFactory}, circular references are
  * resolved in the schema. This option controls how deeply the generator will recurse into
  * self-referencing structures before returning null.
+ *
+ * @author Wei-Ming Wu
  */
 public enum RecursionDepthOption {
 
