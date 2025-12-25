@@ -16,6 +16,9 @@ import java.util.Random;
 import java.util.Set;
 import com.github.curiousoddman.rgxgen.RgxGen;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ArrayNode;
@@ -60,6 +63,9 @@ import tools.jackson.databind.node.StringNode;
  * @author Wei-Ming Wu
  */
 @Builder(toBuilder = true)
+@EqualsAndHashCode(exclude = "random")
+@Getter
+@ToString(exclude = "random")
 public final class JsonSchemaDataGenerator {
 
   // Static factory methods for preset configurations

@@ -2476,4 +2476,77 @@ class JsonSchemaDataGeneratorTest {
       assertEquals("not-an-integer", result.get("value").asString());
     }
   }
+
+  @Nested
+  class EqualityTests {
+
+    @Test
+    void sameConfiguration_areEqual() {
+      var gen1 = JsonSchemaDataGenerator.builder()
+          .enumOption(EnumOption.RANDOM)
+          .arrayOption(ArrayOption.ONE)
+          .booleanOption(BooleanOption.TRUE)
+          .build();
+      var gen2 = JsonSchemaDataGenerator.builder()
+          .enumOption(EnumOption.RANDOM)
+          .arrayOption(ArrayOption.ONE)
+          .booleanOption(BooleanOption.TRUE)
+          .build();
+
+      assertEquals(gen1, gen2);
+    }
+
+    @Test
+    void differentConfiguration_areNotEqual() {
+      var gen1 = JsonSchemaDataGenerator.builder()
+          .enumOption(EnumOption.FIRST)
+          .build();
+      var gen2 = JsonSchemaDataGenerator.builder()
+          .enumOption(EnumOption.LAST)
+          .build();
+
+      assertNotEquals(gen1, gen2);
+    }
+
+    @Test
+    void hashCode_consistentWithEquals() {
+      var gen1 = JsonSchemaDataGenerator.builder()
+          .enumOption(EnumOption.RANDOM)
+          .arrayOption(ArrayOption.ONE)
+          .build();
+      var gen2 = JsonSchemaDataGenerator.builder()
+          .enumOption(EnumOption.RANDOM)
+          .arrayOption(ArrayOption.ONE)
+          .build();
+
+      assertEquals(gen1.hashCode(), gen2.hashCode());
+    }
+
+    @Test
+    void presetConfigurations_areEqual() {
+      assertEquals(JsonSchemaDataGenerator.minimal(), JsonSchemaDataGenerator.minimal());
+      assertEquals(JsonSchemaDataGenerator.normal(), JsonSchemaDataGenerator.normal());
+      assertEquals(JsonSchemaDataGenerator.verbose(), JsonSchemaDataGenerator.verbose());
+      assertEquals(JsonSchemaDataGenerator.skeleton(), JsonSchemaDataGenerator.skeleton());
+    }
+
+    @Test
+    void toString_doesNotContainRandom() {
+      var gen = JsonSchemaDataGenerator.builder().build();
+      String str = gen.toString();
+
+      assertFalse(str.contains("random"), "toString should not contain 'random' field");
+    }
+
+    @Test
+    void toString_containsConfigurationOptions() {
+      var gen = JsonSchemaDataGenerator.builder()
+          .enumOption(EnumOption.RANDOM)
+          .build();
+      String str = gen.toString();
+
+      assertTrue(str.contains("enumOption"));
+      assertTrue(str.contains("RANDOM"));
+    }
+  }
 }
