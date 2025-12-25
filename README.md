@@ -1,4 +1,5 @@
 ![Maven Central Version](https://img.shields.io/maven-central/v/com.github.wnameless.json/jsonschema-data-generator)
+[![codecov](https://codecov.io/gh/wnameless/jsonschema-data-generator/graph/badge.svg)](https://codecov.io/gh/wnameless/jsonschema-data-generator)
 
 jsonschema-data-generator
 =============
