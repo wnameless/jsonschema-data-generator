@@ -131,26 +131,34 @@ JsonNode data = JsonSchemaDataGenerator.normal().generate(schemaFile);
 
 | Option | Values | Purpose |
 |--------|--------|---------|
+| **Schema Composition** | | |
+| AllOfOption | MERGE, SKIP | allOf keyword handling during flattening |
+| OneOfOption | NULL, FIRST, LAST, RANDOM | oneOf branch selection |
+| AnyOfOption | NULL, FIRST, LAST, RANDOM | anyOf branch selection |
+| **Schema Processing** | | |
+| RecursionDepthOption | NONE, SHALLOW, MODERATE, DEEP, VERY_DEEP | Recursion depth for circular schemas |
+| **Type Handling** | | |
+| UnionTypeOption | FIRST_NON_NULL, FIRST, LAST, RANDOM, NULL_FIRST | Union type array handling (e.g., `["string", "null"]`) |
+| **Primitive Values** | | |
 | StringOption | NULL, EMPTY, GENERATED | Base string value generation |
 | NumberOption | NULL, ZERO, GENERATED | Base number value generation |
 | BooleanOption | NULL, TRUE, FALSE, RANDOM | Boolean value generation |
 | EnumOption | NULL, FIRST, LAST, RANDOM | Enum value selection |
+| **Primitive Constraints** | | |
 | FormattedStringOption | NULL, DATAFAKER, RANDOM | String format/pattern handling |
 | ConstrainedNumberOption | NULL, MINIMUM, MAXIMUM, MIDPOINT, DATAFAKER, RANDOM | Number range handling |
-| ArrayOption | NULL, EMPTY, ONE, RANDOM | Object array item count |
-| PrimitiveArrayOption | NULL, EMPTY, ONE, RANDOM | Primitive array item count |
+| **Object Properties** | | |
 | PropertyScopeOption | ALL, REQUIRED_ONLY | Property inclusion scope |
-| DefaultValueOption | USE, IGNORE | Default value handling |
-| ExamplesOption | NONE, FIRST, LAST, RANDOM | Examples keyword handling |
-| ContainsOption | NONE, FIRST, LAST, RANDOM, DISTRIBUTE | Contains constraint handling |
-| OneOfOption | NULL, FIRST, LAST, RANDOM | oneOf branch selection |
-| AnyOfOption | NULL, FIRST, LAST, RANDOM | anyOf branch selection |
-| UniqueItemsOption | ENFORCE, IGNORE | uniqueItems constraint |
 | AdditionalPropertiesOption | NONE, GENERATE_ONE, GENERATE_FEW | Additional properties generation |
 | PatternPropertiesOption | NONE, GENERATE_ONE, GENERATE_FEW | Pattern properties generation |
-| UnionTypeOption | FIRST_NON_NULL, FIRST, LAST, RANDOM, NULL_FIRST | Union type array handling (e.g., `["string", "null"]`) |
-| RecursionDepthOption | NONE, SHALLOW, MODERATE, DEEP, VERY_DEEP | Recursion depth for circular schemas |
-| AllOfOption | MERGE, SKIP | AllOf keyword handling during flattening |
+| **Array Handling** | | |
+| ArrayOption | NULL, EMPTY, ONE, RANDOM | Object array item count |
+| PrimitiveArrayOption | NULL, EMPTY, ONE, RANDOM | Primitive array item count |
+| ContainsOption | NONE, FIRST, LAST, RANDOM, DISTRIBUTE | Contains constraint handling |
+| UniqueItemsOption | ENFORCE, IGNORE | uniqueItems constraint |
+| **Schema Keywords** | | |
+| DefaultValueOption | USE, IGNORE | Default value handling |
+| ExamplesOption | NONE, FIRST, LAST, RANDOM | Examples keyword handling |
 
 **Naming Convention**:
 - `NULL` = produce null value (for value-defining keywords)

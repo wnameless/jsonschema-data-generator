@@ -149,50 +149,62 @@ public final class JsonSchemaDataGenerator {
         .build();
   }
 
-  // Existing options
+  // Schema composition options
   @Builder.Default
-  private final EnumOption enumOption = EnumOption.FIRST;
-  @Builder.Default
-  private final AnyOfOption anyOfOption = AnyOfOption.FIRST;
+  private final AllOfOption allOfOption = AllOfOption.MERGE;
   @Builder.Default
   private final OneOfOption oneOfOption = OneOfOption.FIRST;
   @Builder.Default
-  private final ArrayOption arrayOption = ArrayOption.ONE;
-  @Builder.Default
-  private final PrimitiveArrayOption primitiveArrayOption = PrimitiveArrayOption.ONE;
+  private final AnyOfOption anyOfOption = AnyOfOption.FIRST;
 
-  // New options
+  // Schema processing options
   @Builder.Default
-  private final BooleanOption booleanOption = BooleanOption.FALSE;
+  private final RecursionDepthOption recursionDepthOption = RecursionDepthOption.MODERATE;
+
+  // Type handling options
   @Builder.Default
-  private final FormattedStringOption formattedStringOption = FormattedStringOption.DATAFAKER;
-  @Builder.Default
-  private final ConstrainedNumberOption constrainedNumberOption = ConstrainedNumberOption.DATAFAKER;
-  @Builder.Default
-  private final DefaultValueOption defaultValueOption = DefaultValueOption.USE;
-  @Builder.Default
-  private final PropertyScopeOption propertyScopeOption = PropertyScopeOption.ALL;
-  @Builder.Default
-  private final UniqueItemsOption uniqueItemsOption = UniqueItemsOption.ENFORCE;
-  @Builder.Default
-  private final ExamplesOption examplesOption = ExamplesOption.FIRST;
-  @Builder.Default
-  private final ContainsOption containsOption = ContainsOption.FIRST;
-  @Builder.Default
-  private final AdditionalPropertiesOption additionalPropertiesOption =
-      AdditionalPropertiesOption.NONE;
-  @Builder.Default
-  private final PatternPropertiesOption patternPropertiesOption = PatternPropertiesOption.NONE;
+  private final UnionTypeOption unionTypeOption = UnionTypeOption.FIRST_NON_NULL;
+
+  // Primitive value options
   @Builder.Default
   private final StringOption stringOption = StringOption.GENERATED;
   @Builder.Default
   private final NumberOption numberOption = NumberOption.GENERATED;
   @Builder.Default
-  private final UnionTypeOption unionTypeOption = UnionTypeOption.FIRST_NON_NULL;
+  private final BooleanOption booleanOption = BooleanOption.FALSE;
   @Builder.Default
-  private final RecursionDepthOption recursionDepthOption = RecursionDepthOption.MODERATE;
+  private final EnumOption enumOption = EnumOption.FIRST;
+
+  // Primitive constraint options
   @Builder.Default
-  private final AllOfOption allOfOption = AllOfOption.MERGE;
+  private final FormattedStringOption formattedStringOption = FormattedStringOption.DATAFAKER;
+  @Builder.Default
+  private final ConstrainedNumberOption constrainedNumberOption = ConstrainedNumberOption.DATAFAKER;
+
+  // Object property options
+  @Builder.Default
+  private final PropertyScopeOption propertyScopeOption = PropertyScopeOption.ALL;
+  @Builder.Default
+  private final AdditionalPropertiesOption additionalPropertiesOption =
+      AdditionalPropertiesOption.NONE;
+  @Builder.Default
+  private final PatternPropertiesOption patternPropertiesOption = PatternPropertiesOption.NONE;
+
+  // Array options
+  @Builder.Default
+  private final ArrayOption arrayOption = ArrayOption.ONE;
+  @Builder.Default
+  private final PrimitiveArrayOption primitiveArrayOption = PrimitiveArrayOption.ONE;
+  @Builder.Default
+  private final ContainsOption containsOption = ContainsOption.FIRST;
+  @Builder.Default
+  private final UniqueItemsOption uniqueItemsOption = UniqueItemsOption.ENFORCE;
+
+  // Schema keyword options
+  @Builder.Default
+  private final DefaultValueOption defaultValueOption = DefaultValueOption.USE;
+  @Builder.Default
+  private final ExamplesOption examplesOption = ExamplesOption.FIRST;
 
   private final Random random = new Random();
 
@@ -200,26 +212,16 @@ public final class JsonSchemaDataGenerator {
     return ObjectMapperFactory.getObjectMapper();
   }
 
-  // Fluent API methods
+  // Fluent API methods - Schema composition options
 
   /**
-   * Returns a new generator with the specified enum option.
+   * Returns a new generator with the specified allOf option.
    *
-   * @param option the enum selection strategy
+   * @param option controls whether allOf schemas are merged during flattening
    * @return a new generator instance with the updated option
    */
-  public JsonSchemaDataGenerator withEnumOption(EnumOption option) {
-    return this.toBuilder().enumOption(option).build();
-  }
-
-  /**
-   * Returns a new generator with the specified anyOf option.
-   *
-   * @param option the anyOf schema selection strategy
-   * @return a new generator instance with the updated option
-   */
-  public JsonSchemaDataGenerator withAnyOfOption(AnyOfOption option) {
-    return this.toBuilder().anyOfOption(option).build();
+  public JsonSchemaDataGenerator withAllOfOption(AllOfOption option) {
+    return this.toBuilder().allOfOption(option).build();
   }
 
   /**
@@ -233,124 +235,40 @@ public final class JsonSchemaDataGenerator {
   }
 
   /**
-   * Returns a new generator with the specified array option for object arrays.
+   * Returns a new generator with the specified anyOf option.
    *
-   * @param option the array item count strategy for object arrays
+   * @param option the anyOf schema selection strategy
    * @return a new generator instance with the updated option
    */
-  public JsonSchemaDataGenerator withArrayOption(ArrayOption option) {
-    return this.toBuilder().arrayOption(option).build();
+  public JsonSchemaDataGenerator withAnyOfOption(AnyOfOption option) {
+    return this.toBuilder().anyOfOption(option).build();
   }
 
-  /**
-   * Returns a new generator with the specified array option for primitive arrays.
-   *
-   * @param option the array item count strategy for primitive arrays
-   * @return a new generator instance with the updated option
-   */
-  public JsonSchemaDataGenerator withPrimitiveArrayOption(PrimitiveArrayOption option) {
-    return this.toBuilder().primitiveArrayOption(option).build();
-  }
+  // Fluent API methods - Schema processing options
 
   /**
-   * Returns a new generator with the specified boolean option.
+   * Returns a new generator with the specified recursion depth option.
    *
-   * @param option the boolean value generation strategy
+   * @param option the maximum recursion depth for circular schemas
    * @return a new generator instance with the updated option
    */
-  public JsonSchemaDataGenerator withBooleanOption(BooleanOption option) {
-    return this.toBuilder().booleanOption(option).build();
+  public JsonSchemaDataGenerator withRecursionDepthOption(RecursionDepthOption option) {
+    return this.toBuilder().recursionDepthOption(option).build();
   }
 
-  /**
-   * Returns a new generator with the specified formatted string option.
-   *
-   * @param option the strategy for generating strings with format or pattern constraints
-   * @return a new generator instance with the updated option
-   */
-  public JsonSchemaDataGenerator withFormattedStringOption(FormattedStringOption option) {
-    return this.toBuilder().formattedStringOption(option).build();
-  }
+  // Fluent API methods - Type handling options
 
   /**
-   * Returns a new generator with the specified constrained number option.
+   * Returns a new generator with the specified union type option.
    *
-   * @param option the strategy for generating numbers with min/max constraints
+   * @param option how to handle union type arrays like ["string", "null"]
    * @return a new generator instance with the updated option
    */
-  public JsonSchemaDataGenerator withConstrainedNumberOption(ConstrainedNumberOption option) {
-    return this.toBuilder().constrainedNumberOption(option).build();
+  public JsonSchemaDataGenerator withUnionTypeOption(UnionTypeOption option) {
+    return this.toBuilder().unionTypeOption(option).build();
   }
 
-  /**
-   * Returns a new generator with the specified default value option.
-   *
-   * @param option whether to use schema default values
-   * @return a new generator instance with the updated option
-   */
-  public JsonSchemaDataGenerator withDefaultValueOption(DefaultValueOption option) {
-    return this.toBuilder().defaultValueOption(option).build();
-  }
-
-  /**
-   * Returns a new generator with the specified property scope option.
-   *
-   * @param option whether to generate all properties or required only
-   * @return a new generator instance with the updated option
-   */
-  public JsonSchemaDataGenerator withPropertyScopeOption(PropertyScopeOption option) {
-    return this.toBuilder().propertyScopeOption(option).build();
-  }
-
-  /**
-   * Returns a new generator with the specified unique items option.
-   *
-   * @param option whether to enforce uniqueItems constraint
-   * @return a new generator instance with the updated option
-   */
-  public JsonSchemaDataGenerator withUniqueItemsOption(UniqueItemsOption option) {
-    return this.toBuilder().uniqueItemsOption(option).build();
-  }
-
-  /**
-   * Returns a new generator with the specified examples option.
-   *
-   * @param option how to use schema examples
-   * @return a new generator instance with the updated option
-   */
-  public JsonSchemaDataGenerator withExamplesOption(ExamplesOption option) {
-    return this.toBuilder().examplesOption(option).build();
-  }
-
-  /**
-   * Returns a new generator with the specified contains option.
-   *
-   * @param option how to handle array contains constraints
-   * @return a new generator instance with the updated option
-   */
-  public JsonSchemaDataGenerator withContainsOption(ContainsOption option) {
-    return this.toBuilder().containsOption(option).build();
-  }
-
-  /**
-   * Returns a new generator with the specified additional properties option.
-   *
-   * @param option how many additional properties to generate
-   * @return a new generator instance with the updated option
-   */
-  public JsonSchemaDataGenerator withAdditionalPropertiesOption(AdditionalPropertiesOption option) {
-    return this.toBuilder().additionalPropertiesOption(option).build();
-  }
-
-  /**
-   * Returns a new generator with the specified pattern properties option.
-   *
-   * @param option how many pattern properties to generate
-   * @return a new generator instance with the updated option
-   */
-  public JsonSchemaDataGenerator withPatternPropertiesOption(PatternPropertiesOption option) {
-    return this.toBuilder().patternPropertiesOption(option).build();
-  }
+  // Fluent API methods - Primitive value options
 
   /**
    * Returns a new generator with the specified string option.
@@ -373,33 +291,141 @@ public final class JsonSchemaDataGenerator {
   }
 
   /**
-   * Returns a new generator with the specified union type option.
+   * Returns a new generator with the specified boolean option.
    *
-   * @param option how to handle union type arrays like ["string", "null"]
+   * @param option the boolean value generation strategy
    * @return a new generator instance with the updated option
    */
-  public JsonSchemaDataGenerator withUnionTypeOption(UnionTypeOption option) {
-    return this.toBuilder().unionTypeOption(option).build();
+  public JsonSchemaDataGenerator withBooleanOption(BooleanOption option) {
+    return this.toBuilder().booleanOption(option).build();
   }
 
   /**
-   * Returns a new generator with the specified recursion depth option.
+   * Returns a new generator with the specified enum option.
    *
-   * @param option the maximum recursion depth for circular schemas
+   * @param option the enum selection strategy
    * @return a new generator instance with the updated option
    */
-  public JsonSchemaDataGenerator withRecursionDepthOption(RecursionDepthOption option) {
-    return this.toBuilder().recursionDepthOption(option).build();
+  public JsonSchemaDataGenerator withEnumOption(EnumOption option) {
+    return this.toBuilder().enumOption(option).build();
+  }
+
+  // Fluent API methods - Primitive constraint options
+
+  /**
+   * Returns a new generator with the specified formatted string option.
+   *
+   * @param option the strategy for generating strings with format or pattern constraints
+   * @return a new generator instance with the updated option
+   */
+  public JsonSchemaDataGenerator withFormattedStringOption(FormattedStringOption option) {
+    return this.toBuilder().formattedStringOption(option).build();
   }
 
   /**
-   * Returns a new generator with the specified allOf option.
+   * Returns a new generator with the specified constrained number option.
    *
-   * @param option controls whether allOf schemas are merged during flattening
+   * @param option the strategy for generating numbers with min/max constraints
    * @return a new generator instance with the updated option
    */
-  public JsonSchemaDataGenerator withAllOfOption(AllOfOption option) {
-    return this.toBuilder().allOfOption(option).build();
+  public JsonSchemaDataGenerator withConstrainedNumberOption(ConstrainedNumberOption option) {
+    return this.toBuilder().constrainedNumberOption(option).build();
+  }
+
+  // Fluent API methods - Object property options
+
+  /**
+   * Returns a new generator with the specified property scope option.
+   *
+   * @param option whether to generate all properties or required only
+   * @return a new generator instance with the updated option
+   */
+  public JsonSchemaDataGenerator withPropertyScopeOption(PropertyScopeOption option) {
+    return this.toBuilder().propertyScopeOption(option).build();
+  }
+
+  /**
+   * Returns a new generator with the specified additional properties option.
+   *
+   * @param option how many additional properties to generate
+   * @return a new generator instance with the updated option
+   */
+  public JsonSchemaDataGenerator withAdditionalPropertiesOption(AdditionalPropertiesOption option) {
+    return this.toBuilder().additionalPropertiesOption(option).build();
+  }
+
+  /**
+   * Returns a new generator with the specified pattern properties option.
+   *
+   * @param option how many pattern properties to generate
+   * @return a new generator instance with the updated option
+   */
+  public JsonSchemaDataGenerator withPatternPropertiesOption(PatternPropertiesOption option) {
+    return this.toBuilder().patternPropertiesOption(option).build();
+  }
+
+  // Fluent API methods - Array options
+
+  /**
+   * Returns a new generator with the specified array option for object arrays.
+   *
+   * @param option the array item count strategy for object arrays
+   * @return a new generator instance with the updated option
+   */
+  public JsonSchemaDataGenerator withArrayOption(ArrayOption option) {
+    return this.toBuilder().arrayOption(option).build();
+  }
+
+  /**
+   * Returns a new generator with the specified array option for primitive arrays.
+   *
+   * @param option the array item count strategy for primitive arrays
+   * @return a new generator instance with the updated option
+   */
+  public JsonSchemaDataGenerator withPrimitiveArrayOption(PrimitiveArrayOption option) {
+    return this.toBuilder().primitiveArrayOption(option).build();
+  }
+
+  /**
+   * Returns a new generator with the specified contains option.
+   *
+   * @param option how to handle array contains constraints
+   * @return a new generator instance with the updated option
+   */
+  public JsonSchemaDataGenerator withContainsOption(ContainsOption option) {
+    return this.toBuilder().containsOption(option).build();
+  }
+
+  /**
+   * Returns a new generator with the specified unique items option.
+   *
+   * @param option whether to enforce uniqueItems constraint
+   * @return a new generator instance with the updated option
+   */
+  public JsonSchemaDataGenerator withUniqueItemsOption(UniqueItemsOption option) {
+    return this.toBuilder().uniqueItemsOption(option).build();
+  }
+
+  // Fluent API methods - Schema keyword options
+
+  /**
+   * Returns a new generator with the specified default value option.
+   *
+   * @param option whether to use schema default values
+   * @return a new generator instance with the updated option
+   */
+  public JsonSchemaDataGenerator withDefaultValueOption(DefaultValueOption option) {
+    return this.toBuilder().defaultValueOption(option).build();
+  }
+
+  /**
+   * Returns a new generator with the specified examples option.
+   *
+   * @param option how to use schema examples
+   * @return a new generator instance with the updated option
+   */
+  public JsonSchemaDataGenerator withExamplesOption(ExamplesOption option) {
+    return this.toBuilder().examplesOption(option).build();
   }
 
   // Main public API
