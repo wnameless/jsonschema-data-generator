@@ -4,7 +4,7 @@
 
   <groupId>com.github.wnameless.json</groupId>
   <artifactId>jsonschema-data-generator</artifactId>
-  <version>0.1.1-SNAPSHOT</version>
+  <version>0.2.0-SNAPSHOT</version>
 
   <name>jsonschema-data-generator</name>
   <description>JSON Schema Data Generator for Java</description>

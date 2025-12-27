@@ -33,7 +33,7 @@ class JsonSchemaFlattenerTest {
           }
           """;
 
-      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema);
+      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema, AllOfOption.MERGE);
 
       assertNotNull(result);
       assertEquals("object", result.get("type"));
@@ -57,7 +57,7 @@ class JsonSchemaFlattenerTest {
           }
           """;
 
-      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema);
+      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema, AllOfOption.MERGE);
 
       assertNotNull(result);
       assertTrue(result.containsKey("properties"));
@@ -77,7 +77,7 @@ class JsonSchemaFlattenerTest {
           }
           """;
 
-      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema);
+      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema, AllOfOption.MERGE);
 
       assertNotNull(result);
       assertEquals("array", result.get("type"));
@@ -88,7 +88,7 @@ class JsonSchemaFlattenerTest {
     void emptySchema_returnsEmptyMap() throws IOException {
       String schema = "{}";
 
-      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema);
+      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema, AllOfOption.MERGE);
 
       assertNotNull(result);
     }
@@ -104,7 +104,7 @@ class JsonSchemaFlattenerTest {
           }
           """;
 
-      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema);
+      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema, AllOfOption.MERGE);
 
       assertNotNull(result);
       @SuppressWarnings("unchecked")
@@ -128,7 +128,7 @@ class JsonSchemaFlattenerTest {
           }
           """;
 
-      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema);
+      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema, AllOfOption.MERGE);
 
       assertNotNull(result);
       @SuppressWarnings("unchecked")
@@ -158,7 +158,7 @@ class JsonSchemaFlattenerTest {
       File schemaFile = tempDir.resolve("test-schema.json").toFile();
       Files.writeString(schemaFile.toPath(), schema);
 
-      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schemaFile);
+      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schemaFile, AllOfOption.MERGE);
 
       assertNotNull(result);
       assertEquals("object", result.get("type"));
@@ -182,7 +182,7 @@ class JsonSchemaFlattenerTest {
       File schemaFile = tempDir.resolve("complex-schema.json").toFile();
       Files.writeString(schemaFile.toPath(), schema);
 
-      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schemaFile);
+      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schemaFile, AllOfOption.MERGE);
 
       assertNotNull(result);
       assertTrue(result.containsKey("required"));
@@ -193,7 +193,8 @@ class JsonSchemaFlattenerTest {
     void nonExistentFile_throwsException() {
       File nonExistent = new File("/non/existent/path/schema.json");
 
-      assertThrows(IOException.class, () -> JsonSchemaFlattener.flattenJsonSchema(nonExistent));
+      assertThrows(IOException.class,
+          () -> JsonSchemaFlattener.flattenJsonSchema(nonExistent, AllOfOption.MERGE));
     }
   }
 
@@ -212,7 +213,7 @@ class JsonSchemaFlattenerTest {
           """;
       $RefParser parser = new $RefParser(schema);
 
-      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(parser);
+      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(parser, AllOfOption.MERGE);
 
       assertNotNull(result);
       assertEquals("object", result.get("type"));
@@ -224,8 +225,6 @@ class JsonSchemaFlattenerTest {
 
     @Test
     void allOfSkip_doesNotMerge() throws IOException {
-      RefParserFactory.setAllOfOption(AllOfOption.SKIP);
-
       String schema = """
           {
             "type": "object",
@@ -242,7 +241,7 @@ class JsonSchemaFlattenerTest {
           }
           """;
 
-      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema);
+      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema, AllOfOption.SKIP);
 
       assertNotNull(result);
       // With SKIP, allOf should still be present (not merged)
@@ -250,10 +249,21 @@ class JsonSchemaFlattenerTest {
     }
 
     @Test
-    void defaultIsMerge() {
-      RefParserFactory.reset();
+    void allOfMerge_acceptsOption() throws IOException {
+      // Simple schema without allOf to verify MERGE option is accepted
+      String schema = """
+          {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" }
+            }
+          }
+          """;
 
-      assertEquals(AllOfOption.MERGE, RefParserFactory.getAllOfOption());
+      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema, AllOfOption.MERGE);
+
+      assertNotNull(result);
+      assertTrue(result.containsKey("properties"));
     }
   }
 
@@ -279,7 +289,7 @@ class JsonSchemaFlattenerTest {
           }
           """;
 
-      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema);
+      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema, AllOfOption.MERGE);
 
       assertNotNull(result);
       assertTrue(result.containsKey("properties"));
@@ -313,7 +323,7 @@ class JsonSchemaFlattenerTest {
           }
           """;
 
-      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema);
+      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema, AllOfOption.MERGE);
 
       assertNotNull(result);
       assertTrue(result.containsKey("properties"));
@@ -332,7 +342,7 @@ class JsonSchemaFlattenerTest {
           }
           """;
 
-      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema);
+      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema, AllOfOption.MERGE);
 
       assertEquals("User Schema", result.get("title"));
     }
@@ -346,7 +356,7 @@ class JsonSchemaFlattenerTest {
           }
           """;
 
-      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema);
+      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema, AllOfOption.MERGE);
 
       assertEquals("A user object", result.get("description"));
     }
@@ -365,7 +375,7 @@ class JsonSchemaFlattenerTest {
           }
           """;
 
-      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema);
+      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema, AllOfOption.MERGE);
 
       @SuppressWarnings("unchecked")
       Map<String, Object> properties = (Map<String, Object>) result.get("properties");
@@ -388,7 +398,7 @@ class JsonSchemaFlattenerTest {
           }
           """;
 
-      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema);
+      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema, AllOfOption.MERGE);
 
       @SuppressWarnings("unchecked")
       Map<String, Object> properties = (Map<String, Object>) result.get("properties");
@@ -416,7 +426,7 @@ class JsonSchemaFlattenerTest {
           }
           """;
 
-      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema);
+      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema, AllOfOption.MERGE);
 
       @SuppressWarnings("unchecked")
       Map<String, Object> properties = (Map<String, Object>) result.get("properties");
@@ -440,7 +450,7 @@ class JsonSchemaFlattenerTest {
           }
           """;
 
-      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema);
+      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema, AllOfOption.MERGE);
 
       @SuppressWarnings("unchecked")
       Map<String, Object> properties = (Map<String, Object>) result.get("properties");
@@ -463,7 +473,7 @@ class JsonSchemaFlattenerTest {
           }
           """;
 
-      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema);
+      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema, AllOfOption.MERGE);
 
       @SuppressWarnings("unchecked")
       Map<String, Object> properties = (Map<String, Object>) result.get("properties");
@@ -485,7 +495,7 @@ class JsonSchemaFlattenerTest {
           }
           """;
 
-      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema);
+      Map<String, Object> result = JsonSchemaFlattener.flattenJsonSchema(schema, AllOfOption.MERGE);
 
       assertTrue(result.containsKey("required"));
       @SuppressWarnings("unchecked")

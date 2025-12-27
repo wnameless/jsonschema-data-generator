@@ -7,13 +7,12 @@ import io.zenwave360.jsonrefparser.$RefParser;
 import io.zenwave360.jsonrefparser.$Refs;
 
 /**
- * Utility class for flattening JSON schemas by resolving $ref references and merging allOf
- * constructs.
+ * Utility class for flattening JSON schemas by resolving $ref references and optionally merging
+ * allOf constructs.
  *
  * <p>
- * Uses {@link RefParserFactory} to obtain configuration options. Users can customize parsing
- * behavior by calling {@link RefParserFactory#setOptions} and
- * {@link RefParserFactory#setAllOfOption} before invoking flatten methods.
+ * Uses {@link RefParserFactory} to obtain $ref parsing options. The {@link AllOfOption} parameter
+ * controls whether allOf schemas are merged during flattening.
  *
  * @author Wei-Ming Wu
  */
@@ -25,48 +24,50 @@ public final class JsonSchemaFlattener {
    * Flattens a JSON schema string by resolving $ref references.
    *
    * @param jsonSchema the JSON schema as a string
+   * @param allOfOption controls whether allOf schemas are merged
    * @return a flattened schema map
    * @throws IOException if parsing fails
    */
-  public static Map<String, Object> flattenJsonSchema(String jsonSchema) throws IOException {
+  public static Map<String, Object> flattenJsonSchema(String jsonSchema, AllOfOption allOfOption)
+      throws IOException {
     $RefParser parser = new $RefParser(jsonSchema)
         .withOptions(RefParserFactory.getOptions());
-    return parseAndFlatten(parser);
+    return parseAndFlatten(parser, allOfOption);
   }
 
   /**
    * Flattens a JSON schema file by resolving $ref references.
    *
    * @param jsonSchemaFile the JSON schema file
+   * @param allOfOption controls whether allOf schemas are merged
    * @return a flattened schema map
    * @throws IOException if parsing fails
    */
-  public static Map<String, Object> flattenJsonSchema(File jsonSchemaFile) throws IOException {
+  public static Map<String, Object> flattenJsonSchema(File jsonSchemaFile, AllOfOption allOfOption)
+      throws IOException {
     $RefParser parser = new $RefParser(jsonSchemaFile)
         .withOptions(RefParserFactory.getOptions());
-    return parseAndFlatten(parser);
+    return parseAndFlatten(parser, allOfOption);
   }
 
   /**
    * Flattens a JSON schema using a user-provided $RefParser instance.
    *
-   * <p>
-   * Note: This method still respects {@link RefParserFactory#getAllOfOption} for controlling
-   * whether allOf schemas are merged.
-   *
    * @param parser the pre-configured $RefParser instance
+   * @param allOfOption controls whether allOf schemas are merged
    * @return a flattened schema map
    * @throws IOException if parsing fails
    */
-  public static Map<String, Object> flattenJsonSchema($RefParser parser) throws IOException {
-    return parseAndFlatten(parser);
+  public static Map<String, Object> flattenJsonSchema($RefParser parser, AllOfOption allOfOption)
+      throws IOException {
+    return parseAndFlatten(parser, allOfOption);
   }
 
-  private static Map<String, Object> parseAndFlatten($RefParser parser) throws IOException {
+  private static Map<String, Object> parseAndFlatten($RefParser parser, AllOfOption allOfOption)
+      throws IOException {
     $RefParser parsed = parser.parse().dereference();
 
-    // Conditionally call mergeAllOf based on factory setting
-    if (RefParserFactory.getAllOfOption() == AllOfOption.MERGE) {
+    if (allOfOption == AllOfOption.MERGE) {
       parsed = parsed.mergeAllOf();
     }
 

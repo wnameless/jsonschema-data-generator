@@ -252,17 +252,23 @@ ObjectMapperFactory.setObjectMapper(customMapper);
 ```
 
 ## RefParserFactory
-Configure schema parsing options:
+Configure global schema parsing options:
 
 ```java
-// Set custom RefParser options
+// Set custom RefParser options for $ref resolution
 $RefParserOptions options = new $RefParserOptions()
     .withOnCircular(OnCircular.RESOLVE)
     .withOnMissing(OnMissing.SKIP);
 RefParserFactory.setOptions(options);
+```
 
-// Control allOf merging
-RefParserFactory.setAllOfOption(AllOfOption.SKIP);
+Control allOf merging per generator instance:
+
+```java
+// Skip allOf merging for conditional logic patterns
+JsonSchemaDataGenerator generator = JsonSchemaDataGenerator.builder()
+    .allOfOption(AllOfOption.SKIP)
+    .build();
 ```
 
 # Requirements

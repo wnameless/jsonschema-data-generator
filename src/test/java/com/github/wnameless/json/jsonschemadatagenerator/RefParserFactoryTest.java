@@ -73,46 +73,6 @@ class RefParserFactoryTest {
   }
 
   @Nested
-  class GetAllOfOptionTests {
-
-    @Test
-    void defaultValue_isMerge() {
-      AllOfOption option = RefParserFactory.getAllOfOption();
-
-      assertEquals(AllOfOption.MERGE, option);
-    }
-  }
-
-  @Nested
-  class SetAllOfOptionTests {
-
-    @Test
-    void setsToSkip() {
-      RefParserFactory.setAllOfOption(AllOfOption.SKIP);
-
-      assertEquals(AllOfOption.SKIP, RefParserFactory.getAllOfOption());
-    }
-
-    @Test
-    void setsToMerge() {
-      RefParserFactory.setAllOfOption(AllOfOption.SKIP);
-      RefParserFactory.setAllOfOption(AllOfOption.MERGE);
-
-      assertEquals(AllOfOption.MERGE, RefParserFactory.getAllOfOption());
-    }
-
-    @Test
-    void nullAllOfOption_throwsException() {
-      IllegalArgumentException exception = assertThrows(
-          IllegalArgumentException.class,
-          () -> RefParserFactory.setAllOfOption(null)
-      );
-
-      assertEquals("AllOfOption cannot be null", exception.getMessage());
-    }
-  }
-
-  @Nested
   class ResetTests {
 
     @Test
@@ -132,61 +92,10 @@ class RefParserFactoryTest {
       assertNotSame(original, afterReset, "Should be a new instance after reset");
     }
 
-    @Test
-    void resetsAllOfOptionToMerge() {
-      RefParserFactory.setAllOfOption(AllOfOption.SKIP);
-
-      RefParserFactory.reset();
-
-      assertEquals(AllOfOption.MERGE, RefParserFactory.getAllOfOption());
-    }
-
-    @Test
-    void resetsBothOptionsAndAllOfOption() {
-      // Set custom values for both
-      $RefParserOptions customOptions = new $RefParserOptions()
-          .withOnCircular(OnCircular.SKIP);
-      RefParserFactory.setOptions(customOptions);
-      RefParserFactory.setAllOfOption(AllOfOption.SKIP);
-
-      // Reset
-      RefParserFactory.reset();
-
-      // Verify both are reset
-      assertNotSame(customOptions, RefParserFactory.getOptions());
-      assertEquals(AllOfOption.MERGE, RefParserFactory.getAllOfOption());
-    }
   }
 
   @Nested
   class IntegrationTests {
-
-    @Test
-    void allOfSkip_doesNotMergeAllOfSchemas() throws Exception {
-      RefParserFactory.setAllOfOption(AllOfOption.SKIP);
-
-      String schema = """
-          {
-            "type": "object",
-            "allOf": [
-              {
-                "properties": {
-                  "name": { "type": "string", "default": "skipped" }
-                }
-              }
-            ],
-            "properties": {
-              "id": { "type": "integer", "default": 1 }
-            }
-          }
-          """;
-
-      var generator = JsonSchemaDataGenerator.builder().build();
-      var result = generator.generate(schema);
-
-      // With SKIP, only direct properties should exist (allOf not merged)
-      assertTrue(result.has("id"), "Should have direct property 'id'");
-    }
 
     @Test
     void optionsUsedByFlattener() throws Exception {
@@ -205,7 +114,7 @@ class RefParserFactoryTest {
           """;
 
       // Should not throw - flattener uses the factory's options
-      var result = JsonSchemaFlattener.flattenJsonSchema(schema);
+      var result = JsonSchemaFlattener.flattenJsonSchema(schema, AllOfOption.MERGE);
       assertNotNull(result);
     }
 
@@ -223,7 +132,7 @@ class RefParserFactoryTest {
           }
           """;
 
-      var result = JsonSchemaFlattener.flattenJsonSchema(schema);
+      var result = JsonSchemaFlattener.flattenJsonSchema(schema, AllOfOption.MERGE);
       assertNotNull(result);
       assertTrue(result.containsKey("type"));
       assertTrue(result.containsKey("properties"));

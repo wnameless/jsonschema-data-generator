@@ -49,7 +49,21 @@ public final class JsonSchemaPathNavigator {
    * @throws IOException if schema parsing fails
    */
   public static JsonSchemaPathNavigator of(String jsonSchema) throws IOException {
-    JsonNode node = mapper().valueToTree(JsonSchemaFlattener.flattenJsonSchema(jsonSchema));
+    return of(jsonSchema, AllOfOption.MERGE);
+  }
+
+  /**
+   * Creates a navigator from a JSON Schema string with specified AllOfOption.
+   *
+   * @param jsonSchema the JSON Schema as a string
+   * @param allOfOption controls whether allOf schemas are merged
+   * @return a new JsonSchemaPathNavigator instance
+   * @throws IOException if schema parsing fails
+   */
+  public static JsonSchemaPathNavigator of(String jsonSchema, AllOfOption allOfOption)
+      throws IOException {
+    JsonNode node =
+        mapper().valueToTree(JsonSchemaFlattener.flattenJsonSchema(jsonSchema, allOfOption));
     return new JsonSchemaPathNavigator(node);
   }
 
@@ -61,7 +75,21 @@ public final class JsonSchemaPathNavigator {
    * @throws IOException if schema parsing fails
    */
   public static JsonSchemaPathNavigator of(File jsonSchemaFile) throws IOException {
-    JsonNode node = mapper().valueToTree(JsonSchemaFlattener.flattenJsonSchema(jsonSchemaFile));
+    return of(jsonSchemaFile, AllOfOption.MERGE);
+  }
+
+  /**
+   * Creates a navigator from a JSON Schema file with specified AllOfOption.
+   *
+   * @param jsonSchemaFile the JSON Schema file
+   * @param allOfOption controls whether allOf schemas are merged
+   * @return a new JsonSchemaPathNavigator instance
+   * @throws IOException if schema parsing fails
+   */
+  public static JsonSchemaPathNavigator of(File jsonSchemaFile, AllOfOption allOfOption)
+      throws IOException {
+    JsonNode node =
+        mapper().valueToTree(JsonSchemaFlattener.flattenJsonSchema(jsonSchemaFile, allOfOption));
     return new JsonSchemaPathNavigator(node);
   }
 

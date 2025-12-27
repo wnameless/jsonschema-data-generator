@@ -191,6 +191,8 @@ public final class JsonSchemaDataGenerator {
   private final UnionTypeOption unionTypeOption = UnionTypeOption.FIRST_NON_NULL;
   @Builder.Default
   private final RecursionDepthOption recursionDepthOption = RecursionDepthOption.MODERATE;
+  @Builder.Default
+  private final AllOfOption allOfOption = AllOfOption.MERGE;
 
   private final Random random = new Random();
 
@@ -390,6 +392,16 @@ public final class JsonSchemaDataGenerator {
     return this.toBuilder().recursionDepthOption(option).build();
   }
 
+  /**
+   * Returns a new generator with the specified allOf option.
+   *
+   * @param option controls whether allOf schemas are merged during flattening
+   * @return a new generator instance with the updated option
+   */
+  public JsonSchemaDataGenerator withAllOfOption(AllOfOption option) {
+    return this.toBuilder().allOfOption(option).build();
+  }
+
   // Main public API
 
   /**
@@ -405,7 +417,7 @@ public final class JsonSchemaDataGenerator {
    * @throws Exception if schema parsing or generation fails
    */
   public JsonNode generate(String jsonSchema) throws Exception {
-    Map<String, Object> flattenedMap = JsonSchemaFlattener.flattenJsonSchema(jsonSchema);
+    Map<String, Object> flattenedMap = JsonSchemaFlattener.flattenJsonSchema(jsonSchema, allOfOption);
     JsonNode schemaNode = mapToJsonNode(flattenedMap);
     return generateValue(schemaNode, new HashMap<>());
   }
@@ -423,7 +435,8 @@ public final class JsonSchemaDataGenerator {
    * @throws Exception if schema parsing or generation fails
    */
   public JsonNode generate(File jsonSchemaFile) throws Exception {
-    Map<String, Object> flattenedMap = JsonSchemaFlattener.flattenJsonSchema(jsonSchemaFile);
+    Map<String, Object> flattenedMap =
+        JsonSchemaFlattener.flattenJsonSchema(jsonSchemaFile, allOfOption);
     JsonNode schemaNode = mapToJsonNode(flattenedMap);
     return generateValue(schemaNode, new HashMap<>());
   }
